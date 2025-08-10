@@ -1,0 +1,134 @@
+/* FT_PACKAGE_INST_ERC20_Base
+ * Author: boudi
+ * Creation date: 09/08/2025
+ */
+
+REFINEMENT FT_PACKAGE_INST_ERC20_Base
+REFINES FT_PACKAGE_ABS
+SEES FT_TYPES, FT_VERSIONING, FT_DEPENDENCIES
+
+/* === Concrete universe elements for ERC-20 base === */
+CONCRETE_CONSTANTS
+  v1,                                    /* version */
+  I_ERC20,                               /* external interface */
+  /* Functions (ERC-20 core) */
+  f_totalSupply, f_balanceOf, f_transfer,
+  f_allowance,   f_approve,   f_transferFrom,
+  /* Events */
+  e_Transfer, e_Approval,
+  /* Storage slots */
+  s_totalSupply, s_balances, s_allowances,
+  /* Types (abstract carriers for shapes) */
+  t_ADDR, t_UINT,
+  t_MAP_ADDR_UINT, t_MAP_ADDR_ADDR_UINT,
+  /* Selectors */
+  sel_totalSupply, sel_balanceOf, sel_transfer,
+  sel_allowance,   sel_approve,   sel_transferFrom,
+  /* Implementations + facet */
+  im_totalSupply, im_balanceOf, im_transfer,
+  im_allowance,   im_approve,   im_transferFrom,
+  face_Core
+
+/* === Facts tying these constants to the abstract ontology === */
+PROPERTIES
+  /* Universe membership */
+  v1 ∈ VER ∧ I_ERC20 ∈ INTERFACE ∧ I_ERC20 ∈ EXT ∧
+  f_totalSupply ∈ FUNC ∧ f_balanceOf ∈ FUNC ∧ f_transfer ∈ FUNC ∧
+  f_allowance   ∈ FUNC ∧ f_approve   ∈ FUNC ∧ f_transferFrom ∈ FUNC ∧
+  e_Transfer ∈ EVENT ∧ e_Approval ∈ EVENT ∧
+  s_totalSupply ∈ SLOT ∧ s_balances ∈ SLOT ∧ s_allowances ∈ SLOT ∧
+  t_ADDR ∈ TYPE ∧ t_UINT ∈ TYPE ∧
+  t_MAP_ADDR_UINT ∈ TYPE ∧ t_MAP_ADDR_ADDR_UINT ∈ TYPE ∧
+  sel_totalSupply ∈ SELECTOR ∧
+    sel_balanceOf ∈ SELECTOR ∧
+    sel_transfer ∈ SELECTOR ∧
+  sel_allowance ∈ SELECTOR ∧
+   sel_approve ∈ SELECTOR ∧
+   sel_transferFrom ∈ SELECTOR ∧
+  im_totalSupply ∈ IMPL ∧
+   im_balanceOf ∈ IMPL ∧
+  im_transfer ∈ IMPL ∧
+  im_allowance ∈ IMPL ∧
+  im_approve ∈ IMPL ∧
+  im_transferFrom ∈ IMPL ∧
+  face_Core ∈ FACET ∧
+
+  /* Interface → functions / events (exact ERC-20 surface) */
+  iface_funcs(I_ERC20) =
+    { f_totalSupply, f_balanceOf, f_transfer,
+      f_allowance,   f_approve,   f_transferFrom } ∧
+  iface_events(I_ERC20) = { e_Transfer, e_Approval } ∧
+
+  /* Signatures (inputs/outputs are finite sequences of TYPE) */
+  funSig(f_totalSupply) = ( [],        [ t_UINT ] ) ∧
+  funSig(f_balanceOf)   = ( [ t_ADDR ],[ t_UINT ] ) ∧
+  funSig(f_transfer)    = ( [ t_ADDR, t_UINT ], [] ) ∧
+  funSig(f_allowance)   = ( [ t_ADDR, t_ADDR ], [ t_UINT ] ) ∧
+  funSig(f_approve)     = ( [ t_ADDR, t_UINT ], [] ) ∧
+  funSig(f_transferFrom)= ( [ t_ADDR, t_ADDR, t_UINT ], [] ) ∧
+
+  eventSig(e_Transfer)  = [ t_ADDR, t_ADDR, t_UINT ] ∧
+  eventSig(e_Approval)  = [ t_ADDR, t_ADDR, t_UINT ] ∧
+
+  /* Function selectors (injective globally; we just pin these 6) */
+  selector(f_totalSupply) = sel_totalSupply ∧
+  selector(f_balanceOf)   = sel_balanceOf   ∧
+  selector(f_transfer)    = sel_transfer    ∧
+  selector(f_allowance)   = sel_allowance   ∧
+  selector(f_approve)     = sel_approve     ∧
+  selector(f_transferFrom)= sel_transferFrom
+
+/* Optional “single-version” pin; remove if you’ll add v2 later */
+INVARIANT
+  current = v1
+
+/* === Deterministic init that establishes all abstract invariants === */
+INITIALISATION
+  BEGIN
+    current := v1 ||                                /* <-- missing line */
+
+    /* total maps over VER */
+    exports :=
+      VER × {{ I_ERC20 }} ||
+    exportedFuncs :=
+      VER × {{ f_totalSupply, f_balanceOf, f_transfer,
+               f_allowance,   f_approve,   f_transferFrom }} ||
+    layout :=
+      VER × {{ s_totalSupply, s_balances, s_allowances }} ||
+    slotType :=
+      VER × {{ s_totalSupply |-> t_UINT,
+               s_balances    |-> t_MAP_ADDR_UINT,
+               s_allowances  |-> t_MAP_ADDR_ADDR_UINT }} ||
+
+    /* bindings, facets, RW, requires */
+    ext_to_impl :=
+      { f_totalSupply |-> im_totalSupply,
+        f_balanceOf   |-> im_balanceOf,
+        f_transfer    |-> im_transfer,
+        f_allowance   |-> im_allowance,
+        f_approve     |-> im_approve,
+        f_transferFrom|-> im_transferFrom } ||
+    facetOf :=
+      { im_totalSupply |-> face_Core,
+        im_balanceOf   |-> face_Core,
+        im_transfer    |-> face_Core,
+        im_allowance   |-> face_Core,
+        im_approve     |-> face_Core,
+        im_transferFrom|-> face_Core } ||
+    reads :=
+      { im_totalSupply |-> s_totalSupply,
+        im_balanceOf   |-> s_balances,
+        im_transfer    |-> s_balances,
+        im_allowance   |-> s_allowances,
+        im_approve     |-> s_allowances,
+        im_transferFrom|-> s_allowances,
+        im_transferFrom|-> s_balances } ||
+    writes :=
+      { im_transfer    |-> s_balances,
+        im_approve     |-> s_allowances,
+        im_transferFrom|-> s_allowances,
+        im_transferFrom|-> s_balances } ||
+    requires := {}
+  END
+
+END
