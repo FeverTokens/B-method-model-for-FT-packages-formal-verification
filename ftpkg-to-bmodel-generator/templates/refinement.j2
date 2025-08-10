@@ -1,0 +1,66 @@
+/* FT_PACKAGE_INST_{{ pkg_name }}
+ * Auto-generated. DO NOT EDIT BY HAND.
+ */
+
+REFINEMENT FT_PACKAGE_INST_{{ pkg_name }}
+REFINES FT_PACKAGE_ABS
+SEES FT_TYPES, FT_VERSIONING, FT_DEPENDENCIES
+
+/* === Concrete universe elements for {{ pkg_name }} === */
+CONCRETE_CONSTANTS
+  v1,
+  I_{{ iface_name }},
+  {% for f in func_syms -%}{{ f }}{% if not loop.last %}, {% endif %}{%- endfor %},
+  {% if event_syms %}{% for e in event_syms -%}{{ e }}{% if not loop.last %}, {% endif %}{%- endfor %},{% endif %}
+  {% for s in slot_syms -%}{{ s }}{% if not loop.last %}, {% endif %}{%- endfor %},
+  {% for t in type_syms -%}{{ t }}{% if not loop.last %}, {% endif %}{%- endfor %},
+  {% for sel in selector_syms -%}{{ sel }}{% if not loop.last %}, {% endif %}{%- endfor %},
+  {% for im in impl_syms -%}{{ im }}{% if not loop.last %}, {% endif %}{%- endfor %},
+  {{ facet_sym }}
+
+/* === Facts binding constants to abstract ontology === */
+PROPERTIES
+  v1 : VER & I_{{ iface_name }} : INTERFACE & I_{{ iface_name }} : EXT &
+  {% for f in func_syms -%}{{ f }} : FUNC{% if not loop.last %} &{% endif %}{%- endfor %}{% if event_syms %} &
+  {% for e in event_syms -%}{{ e }} : EVENT{% if not loop.last %} &{% endif %}{%- endfor %}{% endif %} &
+  {% for s in slot_syms -%}{{ s }} : SLOT{% if not loop.last %} &{% endif %}{%- endfor %} &
+  {% for t in type_syms -%}{{ t }} : TYPE{% if not loop.last %} &{% endif %}{%- endfor %} &
+  {% for sel in selector_syms -%}{{ sel }} : SELECTOR{% if not loop.last %} &{% endif %}{%- endfor %} &
+  {% for im in impl_syms -%}{{ im }} : IMPL{% if not loop.last %} &{% endif %}{%- endfor %} &
+  {{ facet_sym }} : FACET &
+
+  iface_funcs(I_{{ iface_name }}) = {{ '{' ~ (func_syms|join(',')) ~ '}' }} &
+  {% if event_syms is defined %}iface_events(I_{{ iface_name }}) = {{ '{' ~ (event_syms|join(',')) ~ '}' }} &{% endif %}
+
+  {% for line in funsig_lines -%}{{ line }}{% if not loop.last %} &{% endif %}
+  {%- endfor %}{% if funsig_lines and eventsig_lines %} &{% endif %}
+  {% for line in eventsig_lines -%}{{ line }}{% if not loop.last %} &{% endif %}
+  {%- endfor %} &
+  {% for line in selector_bindings -%}{{ line }}{% if not loop.last %} &{% endif %}
+  {%- endfor %}
+
+/* Pin live version */
+INVARIANT
+  current = v1
+
+/* === Deterministic init establishing all invariants === */
+INITIALISATION
+  BEGIN
+    current := v1 ||
+
+    /* total maps over VER (constant over versions) */
+    exports := VER*{{'{'}}{{'{'}}I_{{ iface_name }}{{'}'}}{{'}'}} ||
+    exportedFuncs := VER*{{'{'}}{{'{'}}{% for f in func_syms -%}{{ f }}{% if not loop.last %},{% endif %}{%- endfor %}{{'}'}}{{'}'}} ||
+
+    layout := VER*{{'{'}}{{'{'}}{% for s in slot_syms -%}{{ s }}{% if not loop.last %},{% endif %}{%- endfor %}{{'}'}}{{'}'}} ||
+    slotType := VER*{{'{'}}{{'{'}}{% for st in slot_type_pairs -%}{{ st }}{% if not loop.last %},{% endif %}{%- endfor %}{{'}'}}{{'}'}} ||
+
+    ext_to_impl := {{ '{' ~ (ext_to_impl_pairs|join(',')) ~ '}' }} ||
+    facetOf     := {{ '{' ~ (impl_to_facet_pairs|join(',')) ~ '}' }} ||
+
+    reads  := {{ '{' ~ (read_pairs|join(',')) ~ '}' }} ||
+    writes := {{ '{' ~ (write_pairs|join(',')) ~ '}' }} ||
+
+    requires := {{ '{' ~ (requires_pairs|join(',')) ~ '}' }}
+  END
+END

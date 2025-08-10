@@ -1,0 +1,99 @@
+name: ERC20_Base
+version: 1.0.0
+exports:
+  functions:
+  - name: totalSupply
+    selector: '0x18160ddd'
+    inputs: []
+    outputs:
+    - uint256
+  - name: balanceOf
+    selector: '0x70a08231'
+    inputs:
+    - address
+    outputs:
+    - uint256
+  - name: transfer
+    selector: '0xa9059cbb'
+    inputs:
+    - address
+    - uint256
+    outputs: []
+  - name: allowance
+    selector: '0xdd62ed3e'
+    inputs:
+    - address
+    - address
+    outputs:
+    - uint256
+  - name: approve
+    selector: '0x095ea7b3'
+    inputs:
+    - address
+    - uint256
+    outputs: []
+  - name: transferFrom
+    selector: '0x23b872dd'
+    inputs:
+    - address
+    - address
+    - uint256
+    outputs: []
+  events:
+  - name: Transfer
+    inputs:
+    - address
+    - address
+    - uint256
+  - name: Approval
+    inputs:
+    - address
+    - address
+    - uint256
+dependsOn: []
+storage:
+  layout:
+  - slot: s_totalSupply
+    type: uint256
+  - slot: s_balances
+    type: mapping(address=>uint256)
+  - slot: s_allowances
+    type: mapping(address=>mapping(address=>uint256))
+impl:
+  facet: face_Core
+  bindings:
+    totalSupply: im_totalSupply
+    balanceOf: im_balanceOf
+    transfer: im_transfer
+    allowance: im_allowance
+    approve: im_approve
+    transferFrom: im_transferFrom
+  footprints:
+    im_totalSupply:
+      reads:
+      - s_totalSupply
+      writes: []
+    im_balanceOf:
+      reads:
+      - s_balances
+      writes: []
+    im_transfer:
+      reads:
+      - s_balances
+      writes:
+      - s_balances
+    im_allowance:
+      reads:
+      - s_allowances
+      writes: []
+    im_approve:
+      reads: []
+      writes:
+      - s_allowances
+    im_transferFrom:
+      reads:
+      - s_balances
+      - s_allowances
+      writes:
+      - s_balances
+      - s_allowances

@@ -1,0 +1,12 @@
+MACHINE FT_PACKAGE_GLUE_{{ pkg_name }}
+SEES FT_TYPES
+CONSTANTS funSig_loc, eventSig_loc
+PROPERTIES
+  funSig_loc = {
+    {% for f in funsig_map -%}{{ f }}{% if not loop.last %},{% endif %}{%- endfor %}
+  } &
+  eventSig_loc = {
+    {% for e in eventsig_map -%}{{ e }}{% if not loop.last %},{% endif %}{%- endfor %}
+  }
+ASSERTIONS funSig = funSig_loc & eventSig = eventSig_loc
+END
