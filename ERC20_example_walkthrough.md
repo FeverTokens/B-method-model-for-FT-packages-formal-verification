@@ -1,4 +1,4 @@
-# ERC-20 Base — Beginner Walkthrough (Solidity ↔ B‑Method)
+# ERC-20 Base — Walkthrough (Solidity ↔ B‑Method)
 
 This document explains, step by step, how an **ERC‑20 Base** package looks in Solidity and how the **B‑Method model** describes the same thing. The goal is to make the link crystal clear for newcomers: if you understand the package files, you can understand the B model.
 
